@@ -279,6 +279,7 @@ function modifyLicense(){
       msgDialogText.value = data.msg;
       showMsgDialog.value = true;
     });
+    selectedLicenses.value = []
 }
 function deleteLicense(){
   const sequence_hashs = selectedLicenses.value.map(
@@ -294,6 +295,7 @@ function deleteLicense(){
       msgDialogText.value = data.msg;
       showMsgDialog.value = true;
     });
+  selectedLicenses.value = []
 }
 
 function resetLicense(){
@@ -309,6 +311,7 @@ function resetLicense(){
       msgDialogText.value = data.msg;
       showMsgDialog.value = true;
     });
+  selectedLicenses.value = []
 }
 
 
