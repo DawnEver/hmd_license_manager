@@ -60,12 +60,11 @@
   <!-- table -->
   <!-- https://vuetifyjs.com/en/components/data-tables/data-and-display -->
   <v-data-table
-    v-model="selectedLicenses"
+    v-model:selected-items="selectedLicenses"
     :headers="headers"
     :items="gotLicenses"
-    v-model:search="search"
-    v-model:sort-by="sortBy"
-    item-value="name"
+    :search="search"
+    :sort-by="sortBy"
     items-per-page="5"
     return-object
     show-select
@@ -194,12 +193,12 @@
 </template>
 
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 
 const selectedLicenses = ref([]);
 const search = ref('');
-const sortBy = ref([{ key: 'id', order: 'asc' }]);
+const sortBy:any = ref({ key: 'id', order: 'asc' });
 const gotLicenses = ref([]);
 const password = ref('');
 const showMsgDialog = ref(false);
@@ -216,6 +215,10 @@ const modifyDict = ref({
   comment:"",
 })
 
+interface License {
+  sequence_hash: string;
+  sequence: string;
+}
 
 function pullLicense(){
   const url = process.env.VUE_API_URL + '/license?password=' + password.value;
@@ -250,7 +253,7 @@ function newLicense(){
 function modifyLicense(){
   showModifyDialog.value = false;
   const sequence_hashs = selectedLicenses.value.map(
-    item => item.sequence_hash
+    (item:License) => item.sequence_hash
   );
   const url = process.env.VUE_API_URL + '/modify?password=' + password.value +
     '&id=' + sequence_hashs.join('&id=') +
@@ -266,7 +269,7 @@ function modifyLicense(){
 }
 function deleteLicense(){
   const sequence_hashs = selectedLicenses.value.map(
-    item => item.sequence_hash
+    (item:License) => item.sequence_hash
   );
   const url = process.env.VUE_API_URL + '/delete?password=' + password.value
     + '&id=' + sequence_hashs.join('&id=');
@@ -281,7 +284,7 @@ function deleteLicense(){
 
 function resetLicense(){
   const sequence_hashs = selectedLicenses.value.map(
-    item => item.sequence_hash
+    (item:License) => item.sequence_hash
   );
   const url = process.env.VUE_API_URL + '/reset?password=' + password.value
     + '&id=' + sequence_hashs.join('&id=');
@@ -298,13 +301,13 @@ function resetLicense(){
 function exportLicense(){
   const sequences = selectedLicenses.value.map(
     // remove -----BEGIN PUBLIC KEY-----\n \n-----END PUBLIC KEY-----
-    item => item.sequence.slice(27,-25).replace('\n', '\\n')
+    (item:License) => item.sequence.slice(27,-25).replace('\n', '\\n')
   );
   msgDialogText.value = sequences.join('\n');
   showMsgDialog.value = true;
 }
 
-const headers = [
+const headers:any = [
   { title: 'ID', key: '_id', align: 'start', sortable: false,},
   { title: 'Group', key: 'group' },
   { title: 'Comment', key: 'comment' },
