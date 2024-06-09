@@ -8,4 +8,5 @@ export default {
     ok: "已阅",
     cancel: "取消",
     message: "信息",
+    reset: "重置",
 }

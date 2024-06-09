@@ -8,4 +8,5 @@ export default {
     ok: "OK",
     cancel: "Cancel",
     message: "Message",
+    reset: "Reset",
 }

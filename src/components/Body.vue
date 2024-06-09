@@ -1,90 +1,76 @@
 <template>
 <v-card flat>
-    <v-card-title class="d-flex align-center pe-2">
+  <v-card-title class="d-flex align-center pe-2">
 
-      <!-- toolbar -->
-      <!-- pull -->
-      <v-btn
-        variant="plain"
-        prepend-icon="mdi-download"
-        @click="pullLicense"
-      >
-        {{ $t("get_all") }}
-      </v-btn>
-      <!-- new -->
-      <v-btn
-        variant="plain"
-        prepend-icon="mdi-folder-plus"
-        @click="showNewDialog = true"
-      >
-        {{ $t("new") }}
-      </v-btn>
-      <!-- modify -->
-      <v-btn
-        variant="plain"
-        prepend-icon="mdi-pencil"
-        @click="modifyLicense"
-      >
-        {{ $t("modify") }}
-      </v-btn>
-      <!-- delete -->
-      <v-btn
-        variant="plain"
-        prepend-icon="mdi-delete"
-        @click="deleteLicense"
-      >
-        {{ $t("delete") }}
-      </v-btn>
-      <!-- export -->
-      <v-btn
-        variant="plain"
-        prepend-icon="mdi-export-variant"
-        @click="exportLicense"
-      >
-        {{ $t("export") }}
-      </v-btn>
-      <v-spacer></v-spacer>
-      <!-- search -->
-      <v-text-field
-        v-model="search"
-        density="compact"
-        label="Search"
-        prepend-inner-icon="mdi-magnify"
-        variant="solo-filled"
-        flat
-        hide-details
-        single-line
-      ></v-text-field>
-    </v-card-title>
+    <!-- toolbar -->
+    <!-- pull -->
+    <v-btn
+      variant="plain"
+      prepend-icon="mdi-download"
+      @click="pullLicense"
+    >
+      {{ $t("get_all") }}
+    </v-btn>
+    <!-- new -->
+    <v-btn
+      variant="plain"
+      prepend-icon="mdi-folder-plus"
+      @click="showNewDialog = true"
+    >
+      {{ $t("new") }}
+    </v-btn>
+    <!-- modify -->
+    <v-btn
+      variant="plain"
+      prepend-icon="mdi-pencil"
+      @click="showModifyDialog = true"
+    >
+      {{ $t("modify") }}
+    </v-btn>
+    <!-- reset -->
+    <v-btn
+      variant="plain"
+      prepend-icon="mdi-refresh"
+      @click="resetLicense"
+    >
+      {{ $t("reset") }}
+    </v-btn>
+    <!-- export -->
+    <v-btn
+      variant="plain"
+      prepend-icon="mdi-export-variant"
+      @click="exportLicense"
+    >
+      {{ $t("export") }}
+    </v-btn>
+    <v-spacer></v-spacer>
+    <!-- search -->
+    <v-text-field
+      v-model="search"
+      density="compact"
+      label="Search"
+      prepend-inner-icon="mdi-magnify"
+      variant="solo-filled"
+      flat
+      hide-details
+      single-line
+    ></v-text-field>
+  </v-card-title>
 
-    <!-- table -->
-    <!-- https://vuetifyjs.com/en/components/data-tables/data-and-display -->
-    <v-data-table
+  <!-- table -->
+  <!-- https://vuetifyjs.com/en/components/data-tables/data-and-display -->
+  <v-data-table
+    v-model="selectedLicenses"
     :headers="headers"
-    :items="licenseList"
+    :items="gotLicenses"
     v-model:search="search"
     v-model:sort-by="sortBy"
+    item-value="name"
+    items-per-page="5"
+    return-object
     show-select
-    fixed-header
     hover
-    >
-    <template v-slot:header.data-table-select="{ allSelected, selectAll, someSelected }">
-      <v-checkbox-btn
-        :indeterminate="someSelected && !allSelected"
-        :model-value="allSelected"
-        color="primary"
-        @update:model-value="selectAll(!allSelected)"
-      ></v-checkbox-btn>
-    </template>
-
-    <template v-slot:item.data-table-select="{ internalItem, isSelected, toggleSelect }">
-      <v-checkbox-btn
-        :model-value="isSelected(internalItem)"
-        color="primary"
-        @update:model-value="toggleSelect(internalItem)"
-      ></v-checkbox-btn>
-    </template>
-  </v-data-table>
+  ></v-data-table>
 
   <!-- dialog -->
   <!-- https://vuetifyjs.com/en/components/dialogs/ -->
@@ -152,8 +138,51 @@
         </template>
       </v-card>
   </v-dialog>
-
-
+  <!-- modify dialog -->
+  <v-dialog
+      v-model="showModifyDialog"
+      min-width="400px"
+    >
+      <v-card
+        prepend-icon="mdi-pencil"
+        title="MODIFY"
+      >
+        <v-text-field
+          min=0
+          label="Group Name"
+          v-model="modifyDict.groupName"
+        ></v-text-field>
+        <v-text-field
+          min=0
+          label="Comment"
+          v-model="modifyDict.comment"
+        ></v-text-field>
+        <template v-slot:actions>
+          <v-btn
+            class="ms-auto"
+            @click="deleteLicense"
+            prepend-icon="mdi-delete"
+          >
+            {{ $t("delete") }}
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn
+            class="ms-auto"
+            @click="showModifyDialog = false"
+            prepend-icon="mdi-close-thick"
+          >
+            {{ $t("cancel") }}
+          </v-btn>
+          <v-btn
+            class="ms-auto"
+            @click="modifyLicense"
+            prepend-icon="mdi-pencil"
+          >
+            {{ $t("modify") }}
+          </v-btn>
+        </template>
+      </v-card>
+  </v-dialog>
   <!-- password input -->
   <v-otp-input
       v-model="password"
@@ -168,9 +197,10 @@
 <script setup>
 import { ref } from 'vue'
 
+const selectedLicenses = ref([]);
 const search = ref('');
 const sortBy = ref([{ key: 'id', order: 'asc' }]);
-const licenseList = ref([]);
+const gotLicenses = ref([]);
 const password = ref('');
 const showMsgDialog = ref(false);
 const msgDialogText = ref('');
@@ -180,15 +210,21 @@ const newLicenseDict = ref({
   groupName:"",
   comment:"",
 })
+const showModifyDialog = ref(false);
+const modifyDict = ref({
+  groupName:"",
+  comment:"",
+})
+
 
 function pullLicense(){
-  const licenseUrl = process.env.VUE_API_URL + '/license?password=' + password.value;
-  fetch(licenseUrl,)
+  const url = process.env.VUE_API_URL + '/license?password=' + password.value;
+  fetch(url)
     .then(res => {
       return res.json();
     }).then(data => {
       if (data.ok == 1){
-        licenseList.value = data.data.license_list;
+        gotLicenses.value = data.data.license_list;
       }else{
         msgDialogText.value = data.msg;
         showMsgDialog.value = true;
@@ -198,12 +234,12 @@ function pullLicense(){
 
 function newLicense(){
   showNewDialog.value = false;
-  const licenseUrl = process.env.VUE_API_URL +
+  const url = process.env.VUE_API_URL +
     '/new?password=' + password.value +
     '&batch_size=' + newLicenseDict.value.batchSize +
     '&group_name=' + newLicenseDict.value.groupName +
     '&comment=' + newLicenseDict.value.comment;
-  fetch(licenseUrl)
+  fetch(url)
     .then(res => {
       return res.json();
     }).then(data => {
@@ -212,15 +248,64 @@ function newLicense(){
     });
 }
 function modifyLicense(){
+  showModifyDialog.value = false;
+  const sequence_hashs = selectedLicenses.value.map(
+    item => item.sequence_hash
+  );
+  const url = process.env.VUE_API_URL + '/modify?password=' + password.value +
+    '&id=' + sequence_hashs.join('&id=') +
+    '&group_name=' + modifyDict.value.groupName +
+    '&comment=' + modifyDict.value.comment;
+  fetch(url)
+    .then(res => {
+      return res.json();
+    }).then(data => {
+      msgDialogText.value = data.msg;
+      showMsgDialog.value = true;
+    });
 }
 function deleteLicense(){
+  const sequence_hashs = selectedLicenses.value.map(
+    item => item.sequence_hash
+  );
+  const url = process.env.VUE_API_URL + '/delete?password=' + password.value
+    + '&id=' + sequence_hashs.join('&id=');
+  fetch(url)
+    .then(res => {
+      return res.json();
+    }).then(data => {
+      msgDialogText.value = data.msg;
+      showMsgDialog.value = true;
+    });
 }
 
+function resetLicense(){
+  const sequence_hashs = selectedLicenses.value.map(
+    item => item.sequence_hash
+  );
+  const url = process.env.VUE_API_URL + '/reset?password=' + password.value
+    + '&id=' + sequence_hashs.join('&id=');
+  fetch(url)
+    .then(res => {
+      return res.json();
+    }).then(data => {
+      msgDialogText.value = data.msg;
+      showMsgDialog.value = true;
+    });
+}
+
+
 function exportLicense(){
+  const sequences = selectedLicenses.value.map(
+    // remove -----BEGIN PUBLIC KEY-----\n \n-----END PUBLIC KEY-----
+    item => item.sequence.slice(27,-25).replace('\n', '\\n')
+  );
+  msgDialogText.value = sequences.join('\n');
+  showMsgDialog.value = true;
 }
 
 const headers = [
-  { title: 'ID', key: 'id', align: 'start', sortable: false,},
+  { title: 'ID', key: '_id', align: 'start', sortable: false,},
   { title: 'Group', key: 'group' },
   { title: 'Comment', key: 'comment' },
   { title: 'Edition', key: 'edition',minWidth:'200px'},
