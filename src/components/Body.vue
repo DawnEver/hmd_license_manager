@@ -60,7 +60,7 @@
   <!-- table -->
   <!-- https://vuetifyjs.com/en/components/data-tables/data-and-display -->
   <v-data-table
-    v-model:selected-items="selectedLicenses"
+    v-model="selectedLicenses"
     :headers="headers"
     :items="gotLicenses"
     :search="search"
@@ -70,6 +70,7 @@
     show-select
     hover
   ></v-data-table>
+  <!-- <pre>{{selectedLicenses}}</pre> -->
 
   <!-- dialog -->
   <!-- https://vuetifyjs.com/en/components/dialogs/ -->
@@ -198,7 +199,7 @@ import { ref } from 'vue'
 
 const selectedLicenses = ref([]);
 const search = ref('');
-const sortBy:any = ref({ key: 'id', order: 'asc' });
+const sortBy:any = ref([{ key: 'id', order: 'asc' }]);
 const gotLicenses = ref([]);
 const password = ref('');
 const showMsgDialog = ref(false);
@@ -214,6 +215,18 @@ const modifyDict = ref({
   groupName:"",
   comment:"",
 })
+
+const headers:any = [
+  { title: 'ID', key: '_id', align: 'start', sortable: false,},
+  { title: 'Group', key: 'group' },
+  { title: 'Comment', key: 'comment' },
+  { title: 'Edition', key: 'edition',minWidth:'200px'},
+  { title: 'UUID',key: 'uuid',},
+  { title: 'Is_Activated', key: 'is_activated' },
+  { title: 'Last_Active_Time', key: 'last_active_time' },
+  { title: 'Sequence', key: 'sequence', sortable: false },
+  { title: 'License', key: 'license', sortable: false },
+]
 
 interface License {
   sequence_hash: string;
@@ -277,6 +290,7 @@ function deleteLicense(){
     .then(res => {
       return res.json();
     }).then(data => {
+      showModifyDialog.value = false;
       msgDialogText.value = data.msg;
       showMsgDialog.value = true;
     });
@@ -307,16 +321,5 @@ function exportLicense(){
   showMsgDialog.value = true;
 }
 
-const headers:any = [
-  { title: 'ID', key: '_id', align: 'start', sortable: false,},
-  { title: 'Group', key: 'group' },
-  { title: 'Comment', key: 'comment' },
-  { title: 'Edition', key: 'edition',minWidth:'200px'},
-  { title: 'UUID',key: 'uuid',},
-  { title: 'Is_Activated', key: 'is_activated' },
-  { title: 'Last_Active_Time', key: 'last_active_time' },
-  { title: 'Sequence', key: 'sequence', sortable: false },
-  { title: 'License', key: 'license', sortable: false },
-]
 
 </script>

@@ -25,7 +25,7 @@
             <v-btn @click="toggleTheme">
                 <v-icon size="medium">mdi-theme-light-dark</v-icon>
             </v-btn>
-            <v-btn href="https://github.com/hi-motor/hmd_license_manager" target="_blanke">
+            <v-btn href="https://github.com/dawnever/hmd_license_manager" target="_blanke">
                 <v-icon size="medium">mdi-github</v-icon>
             </v-btn>
         </v-toolbar>

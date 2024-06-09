@@ -27,8 +27,8 @@ export default defineConfig({
     }),
   ],
   define: { 'process.env': {
-    // VUE_API_URL : 'https://106.12.29.96:1148',
-    VUE_API_URL : 'http://localhost:1148',
+    VUE_API_URL : 'https://api.hi-motor.site:1148',
+    // VUE_API_URL : 'http://localhost:1148',
   } },
   resolve: {
     alias: {
